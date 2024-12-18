@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Прогноз продаж</title>
+    <!-- Подключение Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1>Прогноз продаж</h1>
+
+    <!-- Кнопки для отправки запросов -->
+    <div>
+        <button onclick="fetchAndRenderGraph('/predict/next7days')">Прогноз на 7 дней</button>
+        <button onclick="fetchAndRenderGraph('/predict/monthly')">Прогноз на месяц</button>
+    </div>
+
+    <!-- Место для отображения графика -->
+    <div id="plotly-graph" style="margin-top: 20px;"></div>
+
+    <script>
+        const SERVER_URL = "http://127.0.0.1:5000";
+
+        async function fetchAndRenderGraph(endpoint) {
+            try {
+                const response = await fetch(`${SERVER_URL}${endpoint}`);
+                if (!response.ok) {
+                    throw new Error("Ошибка сети");
+                }
+                const data = await response.json();
+
+                // Проверка на корректность структуры данных (массив объектов)
+                if (!Array.isArray(data) || data.length === 0 || typeof data[0] !== 'object') {
+                    alert("Неверные данные от сервера.");
+                    return;
+                }
+
+                // Извлекаем ключи первого объекта для осей X и Y
+                const keys = Object.keys(data[0]);
+                if (keys.length < 2) {
+                    alert("Данные должны содержать хотя бы два параметра.");
+                    return;
+                }
+
+                // Первый ключ — это ось X, второй — ось Y
+                const xValues = data.map(item => item[keys[0]]);
+                const yValues = data.map(item => item[keys[1]]);
+
+                // Формируем данные для Plotly
+                const plotData = [
+                    {
+                        x: xValues,
+                        y: yValues,
+                        type: "scatter", // Можно использовать другой тип графика, например, "line" или "bar"
+                        mode: "lines+markers",
+                        marker: { color: "blue" }
+                    }
+                ];
+
+                // Настройки графика
+                const layout = {
+                    title: "Прогноз продаж",
+                    xaxis: { title: keys[0] }, // Используем название первого параметра для оси X
+                    yaxis: { title: keys[1] }  // Используем название второго параметра для оси Y
+                };
+
+                Plotly.newPlot("plotly-graph", plotData, layout);
+            } catch (error) {
+                console.error("Ошибка при загрузке графика:", error.message);
+                alert("Не удалось загрузить данные. Проверьте подключение к серверу.");
+            }
+        }
+    </script>
+</body>
+
+</html>
