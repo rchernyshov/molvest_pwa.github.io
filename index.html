@@ -27,7 +27,14 @@
 
         async function fetchAndRenderGraph(endpoint) {
             try {
-                const response = await fetch(`${SERVER_URL}${endpoint}`);
+                const response = await fetch(`${SERVER_URL}${endpoint}`, {
+                    method: 'GET', // Можно изменить на 'POST', если требуется
+                    headers: {
+                        'ngrok-skip-browser-warning': '69420', // Пробрасываем заголовок
+                        'Content-Type': 'application/json' // Указываем тип контента, если нужно
+                    }
+                });
+
                 if (!response.ok) {
                     throw new Error("Ошибка сети");
                 }
