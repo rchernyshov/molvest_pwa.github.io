@@ -1,10 +1,14 @@
 {
   "name": "Molvest predict",
   "theme_color": "#ffffff",
+  "dir": "ltr",
+  "orientation": "portrait",
+  "scope": "/",
   "background_color": "#fbf3f3",
   "short_name": "molvest",
   "start_url": "https://rchernyshov.github.io/molvest_pwa.github.io/",
   "display": "standalone",
+  "lang": "ru",
   "icons": [
     {
       "src": "windows11/SmallTile.scale-100.png",
