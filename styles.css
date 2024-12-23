@@ -47,8 +47,10 @@ button:hover {
 /* Контейнер кнопок */
 div {
     display: flex;
+    flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+    max-width: 100%;
 }
 
 /* Сообщения об ошибках */

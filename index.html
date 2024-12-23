@@ -17,6 +17,11 @@
     <div>
         <button onclick="fetchAndRenderGraph('/predict/next7days')">Прогноз на 7 дней</button>
         <button onclick="fetchAndRenderGraph('/predict/monthly')">Прогноз на месяц</button>
+        <button onclick="fetchAndRenderGraph('/data/raw')">Текущий датасет</button>
+        <button onclick="fetchAndRenderSummary('/data/summary')">Получить сводную статистику</button>
+        <button onclick="fetchAndTrainModel('/predict/train_model')">Переобучить модель</button>
+        <button onclick="fetchAndRenderCorrelation('/data/correlation')">Корреляция</button>
+
     </div>
 
     <!-- Место для отображения графика -->
@@ -28,10 +33,10 @@
         async function fetchAndRenderGraph(endpoint) {
             try {
                 const response = await fetch(`${SERVER_URL}${endpoint}`, {
-                    method: 'GET', // Можно изменить на 'POST', если требуется
+                    method: 'GET',
                     headers: {
                         'ngrok-skip-browser-warning': '69420', // Пробрасываем заголовок
-                        'Content-Type': 'application/json' // Указываем тип контента, если нужно
+                        'Content-Type': 'application/json' // Указываем тип контента
                     }
                 });
 
@@ -81,6 +86,114 @@
                 alert("Не удалось загрузить данные. Проверьте подключение к серверу.");
             }
         }
+        // Новая функция для получения и отображения сводной статистики
+        async function fetchAndRenderSummary(endpoint) {
+            try {
+                const response = await fetch(`${SERVER_URL}${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'ngrok-skip-browser-warning': '69420',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Ошибка сети");
+                }
+
+                const summaryData = await response.json();
+
+                // Проверка на корректность данных
+                if (typeof summaryData !== 'object') {
+                    alert("Неверные данные от сервера.");
+                    return;
+                }
+
+                // Отображение данных сводной статистики (например, в консоль)
+                console.log("Сводная статистика:", summaryData);
+                alert(`Сводная статистика: ${JSON.stringify(summaryData)}`);
+
+            } catch (error) {
+                console.error("Ошибка при получении сводной статистики:", error.message);
+                alert("Не удалось загрузить сводную статистику. Проверьте подключение к серверу.");
+            }
+        }
+        async function fetchAndTrainModel(endpoint) {
+            try {
+                const response = await fetch(`${SERVER_URL}${endpoint}`, {
+                    method: 'POST',  // Измените на POST
+                    headers: {
+                        'ngrok-skip-browser-warning': '69420',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Ошибка сети");
+                }
+
+                const result = await response.json();
+                alert(`Модель переобучена: ${JSON.stringify(result)}`);
+
+            } catch (error) {
+                console.error("Ошибка при обучении модели:", error.message);
+                alert("Не удалось переобучить модель. Проверьте подключение к серверу.");
+            }
+        }
+        async function fetchAndRenderCorrelation(endpoint) {
+            try {
+                const response = await fetch(`${SERVER_URL}${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'ngrok-skip-browser-warning': '69420',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Ошибка сети");
+                }
+
+                const correlationData = await response.json();
+
+                // Проверка на корректность данных (корреляционная матрица, например, объект с числами)
+                if (typeof correlationData !== 'object') {
+                    alert("Неверные данные от сервера.");
+                    return;
+                }
+
+                // Отображение полученной корреляции в консоль
+                console.log("Корреляция:", correlationData);
+
+                // Извлечение значений и меток
+                const xValues = Object.keys(correlationData);  // Метки по оси X (признаки)
+                const yValues = xValues;  // Так как это симметричная матрица, y-оси такие же
+                const zValues = xValues.map(key => xValues.map(subKey => correlationData[key][subKey]));  // Формируем 2D массив для тепловой карты
+
+                // Формирование данных для графика
+                const plotData = [{
+                    type: 'heatmap',
+                    z: zValues,  // Матрица корреляций
+                    x: xValues,  // Метки по оси X
+                    y: yValues,  // Метки по оси Y
+                    colorscale: 'Viridis'  // Выберите подходящую палитру
+                }];
+
+                // Настройки графика
+                const layout = {
+                    title: "Корреляционная матрица",
+                    xaxis: { title: 'Признаки' },
+                    yaxis: { title: 'Признаки' }
+                };
+
+                // Отображаем график
+                Plotly.newPlot("plotly-graph", plotData, layout);
+            } catch (error) {
+                console.error("Ошибка при получении корреляции:", error.message);
+                alert("Не удалось загрузить корреляцию. Проверьте подключение к серверу.");
+            }
+        }
+
     </script>
 </body>
 
